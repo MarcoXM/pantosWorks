@@ -12,9 +12,10 @@ def get_selected_cols_df(df, cols):
 
 
 class FedExShipmentTracking:
-    def __init__(self, df, col_name = 'Pro No'):
+    def __init__(self, df, col_name = 'Pro No', verbose = True):
         self.df = df
         self.shipment_ids = self.df[col_name].values
+        self.verbose = verbose
         self.url = 'https://www.fedex.com/trackingCal/track'
         self.headers = {
                     'Connection': 'keep-alive',
@@ -37,6 +38,7 @@ class FedExShipmentTracking:
     def track(self, max_amount_track = 30):
         print(" start !!!!")
         print("we have {} fedex tracking number".format(len(self.df)))
+        final_data = []
         for idx in range(0, len(self.df),max_amount_track):
             if idx + 30 <= len(self.df):
                 data = self.encode(self.shipment_ids[idx:idx+30])
@@ -45,8 +47,10 @@ class FedExShipmentTracking:
                 data = self.encode(self.shipment_ids[idx:])
                 response = self.crawl(data)
             
-            self.parse(response)
-            time.sleep(10)
+            bt_result = self.parse(response)
+            final_data.extend(bt_result)
+            time.sleep(5)
+        return final_data
   
     def encode(self,ids):
         form_data = {"data":{"TrackPackagesRequest":{
@@ -68,16 +72,32 @@ class FedExShipmentTracking:
         return data
         
     def crawl(self,data):
-        res_id= requests.post(url,data=data,headers = self.headers)
+        res_id= requests.post(self.url,data=data,headers = self.headers)
         respond = res_id.json()
         return respond
     
-    def parse(self, respond):
+    def parse(self, respond): ## list of dict 
         packages  = respond['TrackPackagesResponse'].get('packageList',[])
-        print(f"{len(packages)} loads tracked !!!")
+        if self.verbose:
+            print(f"{len(packages)} loads tracked !!!")
+        batch_result = []
         for p in packages:
-            print(p['displayTrackingNbr'], p['keyStatus'], p['displayEstDeliveryDateTime'] if p['keyStatus'] != 'Delivered' else p['displayActDeliveryDateTime'])
- 
+            data = [p['displayTrackingNbr'],
+                    p['scanEventList'][0]['status'],
+                    p['displayEstDeliveryDateTime'] if p['displayActDeliveryDateTime'] == "" else p['displayActDeliveryDateTime'],
+                    p['scanEventList'][0]['scanDetails']]
+            if self.verbose:
+                print(data)
+                
+            batch_result.append(
+                {data[0]:{
+                    "Action":data[1],
+                    "Status" : data[2],
+                    "Details":data[3]
+                }}
+            )
+            
+        return batch_result
 
 
 if __name__ == "__main__":
@@ -86,5 +106,6 @@ if __name__ == "__main__":
     df_origin = pd.read_csv(FILE_PATH)
     df = df_origin[df_origin['Carrier Code'].isin(FEDEX_CARRIER_CODE)]
     test = FedExShipmentTracking(df)    
-    test.track()
+    result = test.track()
+    result = dict(ChainMap(*result))
     
