@@ -39,7 +39,7 @@ class FedExShipmentTracking:
         print(" start !!!!")
         print("we have {} fedex tracking number".format(len(self.df)))
         final_data = []
-        for idx in range(0, len(self.df),max_amount_track):
+        for idx in tqdm_notebook(range(0, len(self.df),max_amount_track)):
             if idx + 30 <= len(self.df):
                 data = self.encode(self.shipment_ids[idx:idx+30])
                 response = self.crawl(data)
@@ -49,7 +49,7 @@ class FedExShipmentTracking:
             
             bt_result = self.parse(response)
             final_data.extend(bt_result)
-            time.sleep(5)
+            time.sleep(1.5)
         return final_data
   
     def encode(self,ids):

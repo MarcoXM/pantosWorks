@@ -116,12 +116,12 @@ def encode_search_word(text):
 
 
 
-def enter_value():
+def enter_sys_value():
     return datetime.now().strftime("%m/%d/%Y") + str(datetime.now())[10:16]
 
 
 
-def update_tms(browers):
+def update_iod_tms_with_now(browers):
     i = 0 
     while browers.find_element_by_id(f"iodMonitoringDetailGrid_BODY_{i}_CHECKBOX"):
         checkButton = browers.find_element_by_id(f"iodMonitoringDetailGrid_BODY_{i}_CHECKBOX")
@@ -131,7 +131,7 @@ def update_tms(browers):
         enter = browers.find_element_by_id(f'iodMonitoringDetailGrid_BODY_{i}_20_INPUT')
         enter.click()
         time.sleep(0.1)
-        enter.send_keys(enter_value())
+        enter.send_keys(enter_sys_value())
         remark = browers.find_element_by_id(f'iodMonitoringDetailGrid_BODY_{i}_21_INPUT')
         remark.send_keys(datetime.now().strftime("%m/%d/%Y") + "Marco")
         i += 1
