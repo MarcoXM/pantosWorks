@@ -104,7 +104,7 @@ def get_Drivers(options, json_path = ".\\config.json",webdriver_path = "C:\\User
         else: 
             row += 1
     total = browers.find_element_by_xpath(f"//*[@id='iodMonitoringDailyGrid_BODY_{row}_3']/span/a")
-    time.sleep(30)
+    time.sleep(3)
     total.click()
     print("Done!!")
     return browers
