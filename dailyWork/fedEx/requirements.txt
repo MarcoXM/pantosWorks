@@ -68,7 +68,7 @@ itsdangerous==1.1.0
 jdcal==1.4.1
 jedi @ file:///C:/ci/jedi_1592841982010/work
 Jinja2==2.11.2
-joblib==0.16.0
+joblib==1.2.0
 json-merge-patch==0.2
 jsonschema==3.2.0
 jupyter==1.0.0
